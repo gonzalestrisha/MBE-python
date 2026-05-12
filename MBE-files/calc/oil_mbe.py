@@ -17,8 +17,7 @@ Unit conventions used throughout:
     N             : STB
 """
 
-from .pvt import calc_bgi_from_pvt, calc_bg_from_pvt, calc_eg_from_pvt
-from ..utils.helpers import calc_afactor_bo_rs, calc_afactor_bt
+from utils.helpers import calc_afactor_bo_rs, calc_afactor_bt
 
 # =============================================================================
 # SECTION 1 — VOLUMETRIC OOIP
@@ -250,11 +249,11 @@ def solve_n(f: float, eo: float, eg: float, efw: float,
         ValueError: if denominator is zero or inputs produce non-physical N (<= 0).
     """
     denom = eo + m * eg + efw
-    if denom <= 0:
-        raise ValueError("Denominator (Eo + m*Eg + Efw) must be positive. Check PVT/pressure/injection inputs.")
+    if denom == 0:
+        raise ValueError("Denominator (Eo + m*Eg + Efw) is zero. Check PVT/pressure/injection inputs.")
     numer = f - we - inj_total
-    if numer <= 0:
-        raise ValueError("Numerator (F - We - Inj) <= 0. Check signs/units of F, We, and inj_total.")
+    if numer == 0:
+        raise ValueError("Numerator (F - We - Inj) is zero. Check signs/units of F, We, and inj_total.")
     return numer / denom
 
 
@@ -367,7 +366,7 @@ def solve_m(rhs_per_n: float, eo: float, eg: float, cterm: float) -> float:
         ValueError: if (eg + cterm) is zero
     """
     denom = eg + cterm
-    if denom <= 0:
+    if denom == 0:
         raise ValueError("(Eg + cterm) is zero. Cannot solve for m.")
     return (rhs_per_n - eo - cterm) / denom
 
@@ -552,7 +551,7 @@ def solve_bt(n: float, np: float, rp: float, rsi: float, bg: float,
         ValueError: if (Np - N) is zero
     """
     denom = np - n
-    if denom <= 0:
+    if denom == 0:
         raise ValueError("(Np - N) is zero. Cannot solve for Bt.")
     return (we + inj_total - np * (rp - rsi) * bg - wp * bw + n * (bti - m * eg - efw)) / denom
 
