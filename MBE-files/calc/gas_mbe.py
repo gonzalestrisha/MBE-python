@@ -30,6 +30,8 @@ Bullet map (Gas Reservoir breakdown):
     (Bg formula lives in pvt.py)
 """
 
+#TODO: recheck ALL formulas 
+
 
 # =============================================================================
 # SECTION 1 — VOLUMETRIC GIIP

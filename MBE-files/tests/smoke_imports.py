@@ -6,7 +6,6 @@ import importlib.util
 ROOT = Path(__file__).resolve().parents[1]  # repo root
 # Ensure repo root and MBE-files folder are importable
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "MBE-files"))
 
 # Import by package path if packages exist
 try:
@@ -16,13 +15,13 @@ try:
 except Exception as e:
     print("Package import failed, trying file-based imports:", e)
     # file-based fallback
-    spec = importlib.util.spec_from_file_location("oil_mbe", str(ROOT / "MBE-files" / "calc" / "oil_mbe.py"))
+    spec = importlib.util.spec_from_file_location("oil_mbe", str(ROOT / "calc" / "oil_mbe.py"))
     oil_mbe = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(oil_mbe)
-    spec2 = importlib.util.spec_from_file_location("pvt", str(ROOT / "MBE-files" / "calc" / "pvt.py"))
+    spec2 = importlib.util.spec_from_file_location("pvt", str(ROOT / "calc" / "pvt.py"))
     pvt = importlib.util.module_from_spec(spec2)
     spec2.loader.exec_module(pvt)
-    spec3 = importlib.util.spec_from_file_location("helpers", str(ROOT / "MBE-files" / "utils" / "helpers.py"))
+    spec3 = importlib.util.spec_from_file_location("helpers", str(ROOT / "utils" / "helpers.py"))
     helpers = importlib.util.module_from_spec(spec3)
     spec3.loader.exec_module(helpers)
     print("Loaded modules via file import")

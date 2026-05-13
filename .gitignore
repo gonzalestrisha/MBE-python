@@ -1,4 +1,5 @@
 *.md
+!README.md
 *.env
 *.pdf
 MBE_rev-4.py
@@ -6,3 +7,9 @@ MBE_rev-6.py
 *.idea
 
 __pycache__/
+node_modules/
+*.js
+example_calculation.py
+*.jpg
+*.json
+.venv/
