@@ -34,8 +34,8 @@ def _fmt(value: float, digits: int = 6) -> str:
 
 def _style_box(body: str, accent: str = "#1e1e2e", text: str = "#cdd6f4") -> str:
 	return f"""
-	<div style="font-size: 15px; background-color: {accent}; padding: 15px; border-radius: 8px; color: {text}; border: 1px solid #45475a;">
-	    {body}
+	<div style="font-size: 15px; background-color: {accent}; padding: 15px; border-radius: 8px; color: {text}; border: 1px solid #45475a; margin-bottom: 10px;">
+		{body}
 	</div>
 	"""
 
@@ -150,7 +150,20 @@ def _solve_gas_result(values: dict[str, float], target: str, complexity: str, us
 	wp_used = result.get("wp_solved", wp)
 	g_used = result.get("g", known_g if target != "G" else result["g"])
 	f_used = gas_mbe.calc_f_gas(gp_used, bg, wp_used, bw)
-	drive = gas_mbe.calc_drive_indices_gas(g_used, eg, efw, we_used, wp_used, bw, f_used)
+	# calc_drive_indices_gas raises when F == 0. Handle gracefully so UI doesn't error.
+	try:
+		drive = gas_mbe.calc_drive_indices_gas(g_used, eg, efw, we_used, wp_used, bw, f_used)
+		gei = drive["gei"]
+		edi = drive["edi"]
+		wdi = drive["wdi"]
+		drive_total = drive["total"]
+		drive_error = None
+	except ValueError as exc:
+		gei = 0.0
+		edi = 0.0
+		wdi = 0.0
+		drive_total = 0.0
+		drive_error = str(exc)
 
 	result.update(
 		{
@@ -159,11 +172,12 @@ def _solve_gas_result(values: dict[str, float], target: str, complexity: str, us
 			"we_solved": we_used,
 			"wp_solved": wp_used,
 			"f": f_used,
-			"gei": drive["gei"],
-			"edi": drive["edi"],
-			"wdi": drive["wdi"],
-			"drive_total": drive["total"],
+			"gei": gei,
+			"edi": edi,
+			"wdi": wdi,
+			"drive_total": drive_total,
 			"net_water": we_used - wp_used * bw,
+			"drive_error": drive_error,
 		}
 	)
 	return result
@@ -173,39 +187,43 @@ def _render_results(result: dict[str, float], complexity: str, target: str) -> N
 	st.success(f"Solved {result['solved_label']}: {_fmt(result['solved_value'])}")
 
 	energy_body = f"""
-	<p style="margin: 5px 0;"><b>F:</b> {_fmt(result['f'])} rb</p>
-	<p style="margin: 5px 0;"><b>G*Eg:</b> {_fmt(result['g'] * result['eg'])} rb</p>
-	<p style="margin: 5px 0;"><b>G*Efw:</b> {_fmt(result['g'] * result['efw'])} rb</p>
-	<p style="margin: 5px 0;"><b>Net water:</b> {_fmt(result['net_water'])} rb</p>
+	<p style="margin: 5px 0;"><b>F:</b> {_fmt(result.get('f', 0.0))} rb</p>
+	<p style="margin: 5px 0;"><b>G*Eg:</b> {_fmt(result.get('g', 0.0) * result.get('eg', 0.0))} rb</p>
+	<p style="margin: 5px 0;"><b>G*Efw:</b> {_fmt(result.get('g', 0.0) * result.get('efw', 0.0))} rb</p>
+	<p style="margin: 5px 0;"><b>Net water:</b> {_fmt(result.get('net_water', 0.0))} rb</p>
 	"""
 	st.markdown(_style_box(energy_body), unsafe_allow_html=True)
 
-	drive_body = f"""
-	<div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-	    <span><b>GEI:</b> {_fmt(result['gei'])}</span>
-	    <span><b>EDI:</b> {_fmt(result['edi'])}</span>
-	    <span><b>WDI:</b> {_fmt(result['wdi'])}</span>
-	</div>
-	<hr style="border-top: 1px solid #45475a; margin: 8px 0;">
-	<b>SUM:</b> {_fmt(result['drive_total'])} (Must equal 1.0)
-	"""
-	st.markdown(_style_box(drive_body, text="#a6e3a1"), unsafe_allow_html=True)
+	# If drive indices calculation failed (F == 0), show a friendly warning and skip the pie.
+	if result.get("drive_error"):
+		st.warning(result.get("drive_error"))
+	else:
+		drive_body = f"""
+		<div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+			<span><b>GEI:</b> {_fmt(result.get('gei', 0.0))}</span>
+			<span><b>EDI:</b> {_fmt(result.get('edi', 0.0))}</span>
+			<span><b>WDI:</b> {_fmt(result.get('wdi', 0.0))}</span>
+		</div>
+		<hr style="border-top: 1px solid #45475a; margin: 8px 0;">
+		<b>SUM:</b> {_fmt(result.get('drive_total', 0.0))} (Must equal 1.0)
+		"""
+		st.markdown(_style_box(drive_body, text="#a6e3a1"), unsafe_allow_html=True)
 
-	pie_df = pd.DataFrame(
-		{
-			"Drive": ["GEI", "EDI", "WDI"],
-			"Index": [result["gei"], result["edi"], result["wdi"]],
-		}
-	)
-	fig = px.pie(
-		pie_df[pie_df["Index"] > 0],
-		values="Index",
-		names="Drive",
-		hole=0.4,
-		title="Drive Mechanism Distribution",
-		color_discrete_sequence=px.colors.sequential.Teal,
-	)
-	st.plotly_chart(fig, width='stretch')
+		pie_df = pd.DataFrame(
+			{
+				"Drive": ["GEI", "EDI", "WDI"],
+				"Index": [result.get("gei", 0.0), result.get("edi", 0.0), result.get("wdi", 0.0)],
+			}
+		)
+		fig = px.pie(
+			pie_df[pie_df["Index"] > 0],
+			values="Index",
+			names="Drive",
+			hole=0.4,
+			title="Drive Mechanism Distribution",
+			color_discrete_sequence=px.colors.sequential.Teal,
+		)
+		st.plotly_chart(fig, width='stretch')
 
 	if complexity == "Volumetric (Expansion Only)":
 		st.subheader("p/z Plot")

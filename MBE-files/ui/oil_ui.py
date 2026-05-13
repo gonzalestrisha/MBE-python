@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,8 +79,8 @@ def _oil_label(target: str) -> str:
 
 def _oil_style_box(title: str, body: str, accent: str = "#1e1e2e", text: str = "#cdd6f4") -> str:
 	return f"""
-	<div style="font-size: 15px; background-color: {accent}; padding: 15px; border-radius: 8px; color: {text}; border: 1px solid #45475a;">
-	    {body}
+	<div style="font-size: 15px; background-color: {accent}; padding: 15px; border-radius: 8px; color: {text}; border: 1px solid #45475a; margin-bottom: 10px;">
+		{body}
 	</div>
 	"""
 
@@ -129,18 +130,17 @@ def _oil_render_summary(result: dict[str, float], pvt_mode: str, drive_choice: s
 		sg_formula = 1 - (1 - (result["np"] / result["n"])) * (result["bo"] / result["boi"]) * (1 - swc)
 		method_1 = result["sg_balance"]
 		method_2 = sg_formula
-		st.markdown(
-			_oil_style_box(
-				"Free Gas Saturation",
-				f"""
-				<p style="margin: 5px 0;"><b>Method 1: Gas Balance Sg</b> = {_fmt(method_1, 4)} %</p>
-				<p style="margin: 5px 0;"><b>Method 2: Handout Sg</b> = {_fmt(method_2, 4)} %</p>
-				<p style="margin: 5px 0;"><b>Formula:</b> Sg = 1 - (1 - Np/N) · (Bo/Boi) · (1 - Swc)</p>
-				""",
-				accent="#1f2430",
-			),
-			unsafe_allow_html=True,
+		# Render Free Gas Saturation HTML via components.html to ensure HTML tags display correctly
+		html = _oil_style_box(
+			"Free Gas Saturation",
+			f"""
+			<p style="margin: 5px 0;"><b>Method 1: Gas Balance Sg</b> = {_fmt(method_1, 4)} %</p>
+			<p style="margin: 5px 0;"><b>Method 2: Handout Sg</b> = {_fmt(method_2, 4)} %</p>
+			<p style="margin: 5px 0;"><b>Formula:</b> Sg = 1 - (1 - Np/N) · (Bo/Boi) · (1 - Swc)</p>
+			""",
+			accent="#1f2430",
 		)
+		components.html(html, height=140)
 
 		st.divider()
 		st.subheader("Havlena-Odeh Straight-Line Plot")

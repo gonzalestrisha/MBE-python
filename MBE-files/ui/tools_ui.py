@@ -36,7 +36,7 @@ def _fmt(value: float, digits: int = 6) -> str:
 def _style_box(body: str, accent: str = "#1e1e2e", text: str = "#cdd6f4") -> str:
     body = textwrap.dedent(body).strip()
     return f"""
-<div style="font-size: 15px; background-color: {accent}; padding: 15px; border-radius: 8px; color: {text}; border: 1px solid #45475a;">
+<div style="font-size: 15px; background-color: {accent}; padding: 15px; border-radius: 8px; color: {text}; border: 1px solid #45475a; margin-bottom: 10px;">
 {body}
 </div>
     """
