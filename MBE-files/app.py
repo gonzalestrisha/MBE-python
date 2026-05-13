@@ -1,18 +1,14 @@
 import streamlit as st
 
-#TODO: CHANGE ALL IMPORT PATHS
+st.set_page_config(page_title="MBE Calculator Pro", page_icon="🛢️", layout="wide")
 
-st.set_page_config(
-	page_title="MBE Python",
-	page_icon="🛢️",
-	layout="wide",
-)
+st.title("Petroleum Reservoir MBE System")
+st.markdown("Analyze Reservoir Performance, Energy Terms, and Drive Mechanisms.")
+st.divider()
 
-st.title("MBE Python")
-st.markdown("Reservoir material balance tools for oil, gas, and supporting utilities.")
-
+st.sidebar.header("Reservoir Settings")
 selection = st.sidebar.radio(
-	"Reservoir type",
+	"Select Reservoir Type:",
 	("Oil Reservoir", "Gas Reservoir", "Additional Tools"),
 )
 

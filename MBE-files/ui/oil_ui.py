@@ -142,18 +142,18 @@ def _oil_render_summary(result: dict[str, float], pvt_mode: str, drive_choice: s
 		)
 		components.html(html, height=140)
 
-		st.divider()
-		st.subheader("Havlena-Odeh Straight-Line Plot")
-		fig_ho = go.Figure()
-		fig_ho.add_trace(go.Scatter(x=[0, result["plot_x"]], y=[0, result["plot_y"]], mode="lines+markers", name="Trend", line=dict(color="orange", width=3)))
-		fig_ho.update_layout(
-			title=result["plot_title"],
-			xaxis_title=result["plot_x_label"],
-			yaxis_title=result["plot_y_label"],
-			template="plotly_dark",
-			hovermode="x unified",
-		)
-		st.plotly_chart(fig_ho, width='stretch')
+	st.divider()
+	st.subheader("Havlena-Odeh Straight-Line Plot")
+	fig_ho = go.Figure()
+	fig_ho.add_trace(go.Scatter(x=[0, result["plot_x"]], y=[0, result["plot_y"]], mode="lines+markers", name="Trend", line=dict(color="orange", width=3)))
+	fig_ho.update_layout(
+		title=result["plot_title"],
+		xaxis_title=result["plot_x_label"],
+		yaxis_title=result["plot_y_label"],
+		template="plotly_dark",
+		hovermode="x unified",
+	)
+	st.plotly_chart(fig_ho, width='stretch')
 
 
 def _oil_solve(values: dict[str, float], drive_choice: str, target: str, pvt_mode: str) -> dict[str, float]:
