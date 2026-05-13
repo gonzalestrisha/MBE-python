@@ -1,6 +1,6 @@
 MBE-python — Quick setup (Windows, VS Code)
 
-1. Open this folder in VS Code.
+1. Open **MBE-python** as folder in VS Code.
 
 2. Create a local Python virtual environment:
 
