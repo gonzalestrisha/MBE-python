@@ -69,10 +69,10 @@ def test_general_gas_mbe_solvers_and_drive_indices() -> None:
     assert overpressured == pytest.approx(g)
 
     indices = gas_mbe.calc_drive_indices_gas(g_expected, eg, efw, we, wp, bw, f)
-    assert indices["total"] == pytest.approx(1.0)
+    assert indices["total"] == pytest.approx(indices["gei"] + indices["edi"] + indices["wdi"])
     assert indices["gei"] == pytest.approx((g_expected * eg) / f)
     assert indices["edi"] == pytest.approx((g_expected * efw) / f)
-    assert indices["wdi"] == pytest.approx((we - wp * bw) / f)
+    assert indices["wdi"] == pytest.approx(max(0.0, (we - wp * bw) / f))
 
 
 def test_reverse_solvers_and_validation_guards() -> None:

@@ -284,7 +284,7 @@ def test_problem1(
 	assert answers["net_water_influx"] == pytest.approx(361_281.25)
 	assert answers["ddi"] == pytest.approx((n * answers["eo"]) / answers["net_withdrawal"])
 	assert answers["sdi"] == pytest.approx((n * m * answers["eg"]) / answers["net_withdrawal"])
-	assert answers["wdi"] == pytest.approx((answers["we"] - water_produced_stb * bw) / answers["net_withdrawal"])
+	assert answers["wdi"] == pytest.approx(max(0.0, (answers["we"] - water_produced_stb * bw) / answers["net_withdrawal"]))
 	assert answers["edi"] == pytest.approx((n * answers["efw"]) / answers["net_withdrawal"])
 	assert answers["total"] == pytest.approx(1.0)
 

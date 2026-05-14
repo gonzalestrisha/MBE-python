@@ -609,7 +609,7 @@ def calc_drive_indices_gas(g: float, eg: float, efw: float,
 
     gei = (g * eg) / f
     edi = (g * efw) / f
-    wdi = (we - wp * bw) / f
+    wdi = max(0.0, (we - wp * bw) / f)
 
     return {
         "gei": gei,

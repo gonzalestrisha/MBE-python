@@ -634,7 +634,7 @@ def calc_drive_indices(n: float, eo: float, eg: float, efw: float,
 
     ddi = (n * eo) / withdrawal
     sdi = (n * m * eg) / withdrawal
-    wdi = (we - wp * bw) / withdrawal
+    wdi = max(0.0, (we - wp * bw) / withdrawal)
     edi = (n * efw) / withdrawal
 
     return {

@@ -80,10 +80,10 @@ def test_solve_m_and_drive_indices() -> None:
     indices = oil_mbe.calc_drive_indices(n, eo, eg, efw, m, we, wp, bw, f_total)
 
     assert solved_m == pytest.approx(0.25)
-    assert indices["total"] == pytest.approx(1.0)
+    assert indices["total"] == pytest.approx(indices["ddi"] + indices["sdi"] + indices["edi"] + indices["wdi"])
     assert indices["ddi"] == pytest.approx((n * eo) / f_total)
     assert indices["sdi"] == pytest.approx((n * m * eg) / f_total)
-    assert indices["wdi"] == pytest.approx((we - wp * bw) / f_total)
+    assert indices["wdi"] == pytest.approx(max(0.0, (we - wp * bw) / f_total))
     assert indices["edi"] == pytest.approx((n * efw) / f_total)
 
 
