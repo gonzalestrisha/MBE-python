@@ -632,10 +632,19 @@ def calc_drive_indices(n: float, eo: float, eg: float, efw: float,
     if withdrawal == 0:
         raise ValueError("Total withdrawal (F) cannot be zero.")
 
-    ddi = (n * eo) / withdrawal
-    sdi = (n * m * eg) / withdrawal
+    ddi = max(0.0, (n * eo) / withdrawal)
+    sdi = max(0.0, (n * m * eg) / withdrawal)
     wdi = max(0.0, (we - wp * bw) / withdrawal)
-    edi = (n * efw) / withdrawal
+    edi = max(0.0, (n * efw) / withdrawal)
+
+    total = ddi + sdi + wdi + edi
+    if total == 0:
+        raise ValueError("Drive indices cannot be normalized because all contributions are zero.")
+
+    ddi /= total
+    sdi /= total
+    wdi /= total
+    edi /= total
 
     return {
         "ddi": ddi,

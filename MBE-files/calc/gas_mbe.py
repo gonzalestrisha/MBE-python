@@ -607,9 +607,17 @@ def calc_drive_indices_gas(g: float, eg: float, efw: float,
     if f == 0:
         raise ValueError("Total withdrawal (F) cannot be zero.")
 
-    gei = (g * eg) / f
-    edi = (g * efw) / f
+    gei = max(0.0, (g * eg) / f)
+    edi = max(0.0, (g * efw) / f)
     wdi = max(0.0, (we - wp * bw) / f)
+
+    total = gei + edi + wdi
+    if total == 0:
+        raise ValueError("Drive indices cannot be normalized because all contributions are zero.")
+
+    gei /= total
+    edi /= total
+    wdi /= total
 
     return {
         "gei": gei,

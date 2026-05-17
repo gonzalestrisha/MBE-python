@@ -79,12 +79,18 @@ def test_solve_m_and_drive_indices() -> None:
     solved_m = oil_mbe.solve_m(rhs_per_n, eo, eg, cterm)
     indices = oil_mbe.calc_drive_indices(n, eo, eg, efw, m, we, wp, bw, f_total)
 
+    raw_ddi = max(0.0, (n * eo) / f_total)
+    raw_sdi = max(0.0, (n * m * eg) / f_total)
+    raw_wdi = max(0.0, (we - wp * bw) / f_total)
+    raw_edi = max(0.0, (n * efw) / f_total)
+    raw_total = raw_ddi + raw_sdi + raw_wdi + raw_edi
+
     assert solved_m == pytest.approx(0.25)
     assert indices["total"] == pytest.approx(indices["ddi"] + indices["sdi"] + indices["edi"] + indices["wdi"])
-    assert indices["ddi"] == pytest.approx((n * eo) / f_total)
-    assert indices["sdi"] == pytest.approx((n * m * eg) / f_total)
-    assert indices["wdi"] == pytest.approx(max(0.0, (we - wp * bw) / f_total))
-    assert indices["edi"] == pytest.approx((n * efw) / f_total)
+    assert indices["ddi"] == pytest.approx(raw_ddi / raw_total)
+    assert indices["sdi"] == pytest.approx(raw_sdi / raw_total)
+    assert indices["wdi"] == pytest.approx(raw_wdi / raw_total)
+    assert indices["edi"] == pytest.approx(raw_edi / raw_total)
 
 
 def test_solve_rp_and_validation_guards() -> None:
@@ -99,3 +105,13 @@ def test_solve_rp_and_validation_guards() -> None:
 
     with pytest.raises(ValueError):
         oil_mbe.calc_drive_indices(1.0, 0.1, 0.2, 0.3, 0.25, 0.0, 0.0, 1.0, 0.0)
+
+
+def test_drive_indices_are_normalized_when_water_term_is_negative() -> None:
+    indices = oil_mbe.calc_drive_indices(100.0, 1.0, 2.0, 1.0, 1.0, 0.0, 100.0, 1.0, 100.0)
+
+    assert indices["wdi"] == pytest.approx(0.0)
+    assert indices["ddi"] == pytest.approx(0.25)
+    assert indices["sdi"] == pytest.approx(0.50)
+    assert indices["edi"] == pytest.approx(0.25)
+    assert indices["total"] == pytest.approx(1.0)

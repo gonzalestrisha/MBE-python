@@ -69,10 +69,14 @@ def test_general_gas_mbe_solvers_and_drive_indices() -> None:
     assert overpressured == pytest.approx(g)
 
     indices = gas_mbe.calc_drive_indices_gas(g_expected, eg, efw, we, wp, bw, f)
+    raw_gei = max(0.0, (g_expected * eg) / f)
+    raw_edi = max(0.0, (g_expected * efw) / f)
+    raw_wdi = max(0.0, (we - wp * bw) / f)
+    raw_total = raw_gei + raw_edi + raw_wdi
     assert indices["total"] == pytest.approx(indices["gei"] + indices["edi"] + indices["wdi"])
-    assert indices["gei"] == pytest.approx((g_expected * eg) / f)
-    assert indices["edi"] == pytest.approx((g_expected * efw) / f)
-    assert indices["wdi"] == pytest.approx(max(0.0, (we - wp * bw) / f))
+    assert indices["gei"] == pytest.approx(raw_gei / raw_total)
+    assert indices["edi"] == pytest.approx(raw_edi / raw_total)
+    assert indices["wdi"] == pytest.approx(raw_wdi / raw_total)
 
 
 def test_reverse_solvers_and_validation_guards() -> None:
@@ -111,3 +115,12 @@ def test_reverse_solvers_and_validation_guards() -> None:
         gas_mbe.calc_pz(0.0, 0.87)
     with pytest.raises(ValueError):
         gas_mbe.calc_drive_indices_gas(g, 0.0, 0.0, we, wp, bw, 0.0)
+
+
+def test_drive_indices_are_normalized_when_water_term_is_negative() -> None:
+    indices = gas_mbe.calc_drive_indices_gas(100.0, 1.0, 1.0, 0.0, 100.0, 1.0, 100.0)
+
+    assert indices["wdi"] == pytest.approx(0.0)
+    assert indices["gei"] == pytest.approx(0.5)
+    assert indices["edi"] == pytest.approx(0.5)
+    assert indices["total"] == pytest.approx(1.0)
